@@ -1,115 +1,386 @@
-# web-programming-2026-template
+# SmachnoBook — сайт з рецептами
 
-A reusable Django project with no bundled application, SQLite, and Django's
-standard admin, authentication, sessions, messages, and staticfiles support.
+## Опис
 
-## Local setup
+**SmachnoBook** — сайт, на якому користувачі діляться рецептами, шукають, що приготувати, і зберігають улюблені страви.
 
-Requires the latest patch release of Python 3.12, 3.13, or 3.14. Run these commands from the project directory containing
-`manage.py`.
+**Ідея:** замість нескінченного гортання сторінок із рецептами, у кожного є одне місце, де можна швидко знайти страву за назвою, категорією, інгредієнтом чи часом приготування, а також зберегти її в «Обране» й повернутися пізніше. Рецепти додають самі користувачі, тому в кожного рецепта є автор.
 
-1. Create and activate a virtual environment:
+**Що є на сайті:**
 
-   ```bash
-   python -m venv .venv
-   
-   # for linux/macos
-   source .venv/bin/activate
-   # for Windows:
-   .venv\Scripts\activate
-   ```
+* Каталог рецептів із пошуком за назвою та фільтрами за категорією, інгредієнтом, складністю й часом приготування. Сортування: найновіші, найпопулярніші (за кількістю додавань в «Обране»), найшвидші.
+* Окрема сторінка рецепта: фото, опис, час приготування, складність, кількість порцій, список інгредієнтів із кількістю, покрокове приготування, автор.
+* Сторінка категорій (супи, десерти, основні страви тощо) і сторінка окремої категорії з усіма її рецептами.
+* Сторінка інгредієнтів і сторінка окремого інгредієнта з усіма рецептами, де його використано.
+* Сторінка автора з усіма його рецептами.
+* Додавання, редагування й видалення рецептів, категорій та інгредієнтів.
+* Реєстрація та вхід.
+* Профіль користувача: редагування власних даних, мої рецепти, «Обране».
+* «Обране»: авторизований користувач додає рецепти в улюблені й видаляє їх звідти.
+* Сторінка «Про нас»: контакти та правила публікації рецептів.
 
-2. Install dependencies:
+\---
 
-   ```bash
-   python -m pip install -r requirements-dev.txt
-   ```
+## Загальні домовленості API
 
+* Базовий URL: `/api/v1`
+* Формат даних: **JSON**
+* Назви ресурсів — іменники у множині, дії виражаються HTTP-методами.
+* Пагінація списків: `?page=1\\\&limit=20`.
+* Для захищених ендпоінтів потрібен заголовок `Authorization: Bearer <token>` (\* нижче). *TODO: уточнити механізм токенів на етапі авторизації.*
+* Редагувати й видаляти рецепт може лише його автор. *TBD: обговорити, чи потрібна окрема роль адміністратора для категорій та інгредієнтів.*
 
-3. Apply migrations to create the local SQLite database:
+**Формат помилки:**
 
-   ```bash
-   python manage.py migrate
-   ```
-
-4. Start the development server:
-
-   ```bash
-   python manage.py runserver
-   ```
-
-## Endpoints
-
-With the server running at `http://127.0.0.1:8000`:
-
-| URL | Behavior |
-| --- | --- |
-| http://127.0.0.1:8000/ | No application homepage; may show Django's development welcome page while `DEBUG = True` |
-| http://127.0.0.1:8000/admin/ | Django admin, available after applying migrations |
-
-With `DEBUG = False`, unmatched URLs such as `/` return HTTP 404.
-
-To create an account for admin login, run this after applying migrations:
-
-```bash
-python manage.py createsuperuser
+```json
+{ "error": "Recipe not found" }
 ```
 
-## Add your first application
+**Скорочені статуси:** `200 OK`, `201 Created`, `204 No Content`, `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `409 Conflict`.
 
-1. Create an app from the directory containing `manage.py` (replace `myapp`
-   with your application name):
+\---
 
-   ```bash
-   python manage.py startapp myapp
-   ```
+## Ендпоінти
 
-2. Add its generated configuration class, `myapp.apps.MyappConfig`, to
-   `INSTALLED_APPS` in `config/settings.py`.
-3. Define your views and create `myapp/urls.py` with their URL patterns.
-4. Register that URLconf in `config/urls.py` using `path()` and `include()`,
-   choosing a URL prefix for the app and retaining the admin route.
+### Рецепти (`recipes`)
 
-See the official Django 6.1 tutorial for
-[views and URL registration](https://docs.djangoproject.com/en/6.1/intro/tutorial01/)
-and [app registration and models](https://docs.djangoproject.com/en/6.1/intro/tutorial02/).
+#### `GET /api/v1/recipes`
 
-## Git attributes
+Отримати список рецептів із пошуком, фільтрами й сортуванням.
 
-Git detects text files automatically and normalizes them to LF. Checkouts use
-LF on Linux and Windows, while `.bat` and `.cmd` files use CRLF. Binary files
-are auto-detected and left unchanged, helping avoid newline-only diffs.
+* **Query-параметри** (усі необов'язкові):
 
+  * `search` — пошук за назвою
+  * `category\\\_id` — фільтр за категорією
+  * `ingredient\\\_id` — рецепти, де використано цей інгредієнт
+  * `difficulty` — `easy`, `medium`, `hard`
+  * `max\\\_time` — максимальний час приготування у хвилинах
+  * `sort` — `newest`, `popularity`, `time\\\_asc`
+  * `page`, `limit`
+* **Response:** `200 OK`
 
-## Code style and submission verification
-
-All submissions are required to adhere to PEP-8, Django best practices, and standard HTML/CSS/JS formatting. A deterministic cross-platform utility is provided to help you check and format your code.
-
-### 1. Verification (Check Mode)
-Before submitting, verify that all files adhere to the required standards:
-
-```bash
-python check_submission.py
+```json
+{
+  "data": \\\[
+    {
+      "id": 1,
+      "title": "Борщ український",
+      "cooking\\\_time": 90,
+      "difficulty": "medium",
+      "image\\\_url": "https://example.com/borsch.jpg",
+      "category": { "id": 1, "name": "Супи" },
+      "author": { "id": 3, "name": "Олена Коваль" },
+      "favorites\\\_count": 42
+    }
+  ],
+  "page": 1,
+  "limit": 20,
+  "total": 1
+}
 ```
 
-If all checks pass, you are ready to submit! If any checks fail, review the error output or run the auto-formatter below.
+#### `GET /api/v1/recipes/{id}`
 
-### 2. Auto-Formatting
-To automatically format Python files, fix safe PEP-8 rules, format Django HTML templates, and format CSS/JS static files:
+Отримати повну інформацію про рецепт.
 
-```bash
-python check_submission.py --format
+* **Response:** `200 OK`
+
+```json
+{
+  "id": 1,
+  "title": "Борщ український",
+  "description": "Класичний борщ з буряком і капустою",
+  "instructions": "1. Відваріть м'ясо... 2. Додайте овочі...",
+  "cooking\\\_time": 90,
+  "servings": 6,
+  "difficulty": "medium",
+  "image\\\_url": "https://example.com/borsch.jpg",
+  "created\\\_at": "2025-06-01T12:00:00Z",
+  "category": { "id": 1, "name": "Супи" },
+  "author": { "id": 3, "name": "Олена Коваль" },
+  "ingredients": \\\[
+    { "id": 5, "name": "Буряк", "amount": 2, "unit": "шт" },
+    { "id": 8, "name": "Капуста", "amount": 300, "unit": "г" }
+  ],
+  "favorites\\\_count": 42
+}
 ```
 
-### 3. PyCharm Integration
-If you use PyCharm:
-- **One-Click Run:** In the top-right toolbar run configurations dropdown, select **"Verify Submission"** or **"Format Project"** and click the green **Play** button.
+* **Помилки:** `404 Not Found`
 
-## Development only
+#### `POST /api/v1/recipes` \*
 
-The included settings use `DEBUG = True`, a development secret key, and a local
-SQLite database. The default mailer uses the console backend: email is printed
-to the process's console instead of being delivered.
+Додати новий рецепт (автором стає поточний користувач).
 
-This configuration and Django's development server are not suitable for
-production deployment.
+* **Request body:**
+
+```json
+{
+  "title": "Борщ український",
+  "description": "Класичний борщ з буряком і капустою",
+  "instructions": "1. Відваріть м'ясо... 2. Додайте овочі...",
+  "cooking\\\_time": 90,
+  "servings": 6,
+  "difficulty": "medium",
+  "image\\\_url": "https://example.com/borsch.jpg",
+  "category\\\_id": 1,
+  "ingredients": \\\[
+    { "ingredient\\\_id": 5, "amount": 2, "unit": "шт" },
+    { "ingredient\\\_id": 8, "amount": 300, "unit": "г" }
+  ]
+}
+```
+
+* **Response:** `201 Created` — створений рецепт (як у `GET /recipes/{id}`)
+* **Помилки:** `400 Bad Request`, `401 Unauthorized`, `404` (категорії або інгредієнта не існує)
+
+#### `PUT /api/v1/recipes/{id}` \*
+
+Повністю оновити рецепт (лише автор).
+
+* **Request body:** як у `POST`
+* **Response:** `200 OK` — оновлений рецепт
+* **Помилки:** `400`, `401`, `403` (не автор), `404`
+
+#### `DELETE /api/v1/recipes/{id}` \*
+
+Видалити рецепт (лише автор).
+
+* **Response:** `204 No Content`
+* **Помилки:** `401`, `403`, `404`
+
+\---
+
+### Категорії (`categories`)
+
+#### `GET /api/v1/categories`
+
+Список усіх категорій.
+
+* **Response:** `200 OK`
+
+```json
+{ "data": \\\[ { "id": 1, "name": "Супи" } ] }
+```
+
+#### `GET /api/v1/categories/{id}/recipes`
+
+Усі рецепти певної категорії (параметри `sort`, `page`, `limit` як у списку рецептів).
+
+* **Response:** `200 OK` — список як у `GET /recipes`
+* **Помилки:** `404`
+
+#### `POST /api/v1/categories` \*
+
+* **Request body:** `{ "name": "Супи" }`
+* **Response:** `201 Created` — створена категорія
+* **Помилки:** `400`, `401`, `409` (категорія з такою назвою вже існує)
+
+#### `PUT /api/v1/categories/{id}` \*
+
+* **Request body:** `{ "name": "Перші страви" }`
+* **Response:** `200 OK` — оновлена категорія
+* **Помилки:** `400`, `401`, `404`, `409`
+
+#### `DELETE /api/v1/categories/{id}` \*
+
+* **Response:** `204 No Content`
+* **Помилки:** `401`, `404`, `409` (у категорії є рецепти). *TBD: обговорити, чи видаляти каскадом.*
+
+\---
+
+### Інгредієнти (`ingredients`)
+
+#### `GET /api/v1/ingredients`
+
+Список інгредієнтів.
+
+* **Query-параметри:** `search` — пошук за назвою, `page`, `limit`
+* **Response:** `200 OK`
+
+```json
+{ "data": \\\[ { "id": 5, "name": "Буряк" } ], "page": 1, "limit": 20, "total": 1 }
+```
+
+#### `GET /api/v1/ingredients/{id}/recipes`
+
+Усі рецепти, де використано цей інгредієнт.
+
+* **Response:** `200 OK` — список як у `GET /recipes`
+* **Помилки:** `404`
+
+#### `POST /api/v1/ingredients` \*
+
+* **Request body:** `{ "name": "Буряк" }`
+* **Response:** `201 Created`
+* **Помилки:** `400`, `401`, `409`
+
+#### `PUT /api/v1/ingredients/{id}` \*
+
+* **Request body:** `{ "name": "Буряк столовий" }`
+* **Response:** `200 OK`
+* **Помилки:** `400`, `401`, `404`, `409`
+
+#### `DELETE /api/v1/ingredients/{id}` \*
+
+* **Response:** `204 No Content`
+* **Помилки:** `401`, `404`, `409` (інгредієнт використовується в рецептах)
+
+\---
+
+### Автори (`users`)
+
+#### `GET /api/v1/users/{id}`
+
+Публічна інформація про автора (без email і пароля).
+
+* **Response:** `200 OK`
+
+```json
+{ "id": 3, "name": "Олена Коваль", "recipes\\\_count": 12 }
+```
+
+* **Помилки:** `404`
+
+#### `GET /api/v1/users/{id}/recipes`
+
+Усі рецепти цього автора (`page`, `limit`, `sort`).
+
+* **Response:** `200 OK` — список як у `GET /recipes`
+* **Помилки:** `404`
+
+\---
+
+### Авторизація (`auth`)
+
+#### `POST /api/v1/auth/register`
+
+Реєстрація нового користувача.
+
+* **Request body:**
+
+```json
+{
+  "name": "Олена Коваль",
+  "email": "olena@example.com",
+  "password": "secret123"
+}
+```
+
+* **Response:** `201 Created`
+
+```json
+{ "id": 3, "name": "Олена Коваль", "email": "olena@example.com" }
+```
+
+* **Помилки:** `400` (невалідні дані), `409` (email уже зайнятий)
+
+#### `POST /api/v1/auth/login`
+
+Вхід у систему.
+
+* **Request body:** `{ "email": "olena@example.com", "password": "secret123" }`
+* **Response:** `200 OK`
+
+```json
+{ "token": "<TODO: уточнити формат токена при реалізації авторизації>" }
+```
+
+* **Помилки:** `400`, `401` (невірний email або пароль)
+
+\---
+
+### Профіль (`users/me`) \*
+
+#### `GET /api/v1/users/me`
+
+Дані поточного користувача.
+
+* **Response:** `200 OK`
+
+```json
+{ "id": 3, "name": "Олена Коваль", "email": "olena@example.com", "bio": "Люблю готувати" }
+```
+
+#### `PATCH /api/v1/users/me`
+
+Редагувати власні дані (можна передати лише змінені поля).
+
+* **Request body:** `{ "name": "Олена К.", "bio": "Люблю готувати борщі" }`
+* **Response:** `200 OK` — оновлений профіль
+* **Помилки:** `400`
+
+> Мої рецепти — це `GET /api/v1/users/{id}/recipes` із власним `id`.
+
+\---
+
+### Обране (`favorites`) \*
+
+#### `GET /api/v1/favorites`
+
+Рецепти, збережені поточним користувачем (`page`, `limit`).
+
+* **Response:** `200 OK` — список як у `GET /recipes`
+
+#### `POST /api/v1/favorites`
+
+Додати рецепт в «Обране».
+
+* **Request body:** `{ "recipe\\\_id": 1 }`
+* **Response:** `201 Created`
+
+```json
+{ "recipe\\\_id": 1, "added\\\_at": "2025-06-02T10:00:00Z" }
+```
+
+* **Помилки:** `400`, `404` (рецепта не існує), `409` (вже в «Обраному»)
+
+#### `DELETE /api/v1/favorites/{recipe\\\_id}`
+
+Прибрати рецепт з «Обраного».
+
+* **Response:** `204 No Content`
+* **Помилки:** `404`
+
+\---
+
+### Про нас
+
+#### `GET /api/v1/about`
+
+Контакти та правила публікації рецептів.
+
+* **Response:** `200 OK`
+
+```json
+{
+  "contacts": { "email": "hello@smachnobook.example", "phone": "+380000000000" },
+  "about": "Текст про проєкт",
+  "rules": "Правила публікації рецептів"
+}
+```
+
+*TBD: обговорити, чи зберігати цей текст у БД, чи віддавати статично.*
+
+\---
+
+## Схема бази даних
+
+├── README.md
+
+└── docs/
+
+&#x20;   └── db-schema.png
+
+**Пояснення:**
+
+* Рецепт має одного автора (`users`) і одну категорію (зв'язок «один до багатьох»).
+* Рецепти й інгредієнти пов'язані як «багато до багатьох» через таблицю `recipe\\\_ingredients`, де додатково зберігаються кількість і одиниця виміру.
+* «Обране» — теж «багато до багатьох» між користувачами та рецептами, таблиця `favorites`. Популярність рецепта рахується як кількість рядків у цій таблиці.
+
+\---
+
+## Автор
+
+*Пономаренко Юрій*
+
