@@ -1,8 +1,11 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from users.permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 
 from .exceptions import ConflictError
 from .models import Category, Ingredient, Recipe
@@ -37,9 +40,7 @@ def int_param(request, name, default=None):
     try:
         value = int(raw)
     except ValueError:
-        raise ValidationError(
-            f"Параметр {name} має бути цілим числом."
-        ) from None
+        raise ValidationError(f"Параметр {name} має бути цілим числом.") from None
     if value < 1:
         raise ValidationError(f"Параметр {name} має бути не менше 1.")
     return value
@@ -49,11 +50,9 @@ def paginate(request, queryset, serializer_class):
     page = int_param(request, "page", default=1)
     limit = int_param(request, "limit", default=20)
     if limit > MAX_LIMIT:
-        raise ValidationError(
-            f"Параметр limit не може перевищувати {MAX_LIMIT}."
-        )
+        raise ValidationError(f"Параметр limit не може перевищувати {MAX_LIMIT}.")
     start = (page - 1) * limit
-    items = queryset[start:start + limit]
+    items = queryset[start : start + limit]
     return {
         "data": serializer_class(items, many=True).data,
         "page": page,
@@ -85,9 +84,7 @@ def filter_recipes(request, queryset):
     if difficulty:
         if difficulty not in Recipe.Difficulty.values:
             allowed = ", ".join(Recipe.Difficulty.values)
-            raise ValidationError(
-                f"Параметр difficulty має бути одним із: {allowed}."
-            )
+            raise ValidationError(f"Параметр difficulty має бути одним із: {allowed}.")
         queryset = queryset.filter(difficulty=difficulty)
 
     max_time = int_param(request, "max_time")
@@ -105,9 +102,10 @@ def sort_recipes(request, queryset):
     return queryset.order_by(*SORT_OPTIONS[sort])
 
 
-
-
 class RecipeListView(APIView):
+    # Список бачать усі, створювати рецепти можуть лише авторизовані
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         recipes = filter_recipes(request, recipe_queryset())
         recipes = sort_recipes(request, recipes)
@@ -116,20 +114,23 @@ class RecipeListView(APIView):
     def post(self, request):
         serializer = RecipeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        # Автор рецепта — поточний користувач, його не передають у тілі
+        serializer.save(author=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class RecipeDetailView(APIView):
+    # Читати можуть усі, змінювати й видаляти — автор або адміністратор
+    permission_classes = [IsAuthorOrAdminOrReadOnly]
+
     def get(self, request, pk):
-        queryset = recipe_queryset().prefetch_related(
-            "recipe_ingredients__ingredient"
-        )
+        queryset = recipe_queryset().prefetch_related("recipe_ingredients__ingredient")
         recipe = get_or_404(queryset, pk, "Рецепт")
         return Response(RecipeSerializer(recipe).data)
 
     def put(self, request, pk):
         recipe = get_or_404(recipe_queryset(), pk, "Рецепт")
+        self.check_object_permissions(request, recipe)
         serializer = RecipeSerializer(recipe, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -137,13 +138,14 @@ class RecipeDetailView(APIView):
 
     def delete(self, request, pk):
         recipe = get_or_404(recipe_queryset(), pk, "Рецепт")
+        self.check_object_permissions(request, recipe)
         recipe.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
-
 class CategoryListView(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
     def get(self, request):
         serializer = CategorySerializer(Category.objects.all(), many=True)
         return Response({"data": serializer.data})
@@ -156,6 +158,8 @@ class CategoryListView(APIView):
 
 
 class CategoryDetailView(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
     def get(self, request, pk):
         category = get_or_404(Category.objects.all(), pk, "Категорію")
         return Response(CategorySerializer(category).data)
@@ -180,9 +184,10 @@ class CategoryDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
-
 class IngredientListView(APIView):
+    # Новий інгредієнт може додати будь-який авторизований автор рецепта
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         ingredients = Ingredient.objects.all()
         search = request.query_params.get("search")
@@ -198,6 +203,9 @@ class IngredientListView(APIView):
 
 
 class IngredientDetailView(APIView):
+    # Змінювати й видаляти інгредієнти може лише адміністратор
+    permission_classes = [IsAdminOrReadOnly]
+
     def get(self, request, pk):
         ingredient = get_or_404(Ingredient.objects.all(), pk, "Інгредієнт")
         return Response(IngredientSerializer(ingredient).data)
@@ -221,19 +229,16 @@ class IngredientDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
-
-
 class UserDetailView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request, pk):
         user = get_or_404(User.objects.all(), pk, "Автора")
         return Response(UserSerializer(user).data)
 
 
-
-
-
 class RelatedRecipesView(APIView):
+    permission_classes = [AllowAny]
 
     model = None
     label = ""
