@@ -52,7 +52,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.Serializer):
-
     ingredient_id = serializers.PrimaryKeyRelatedField(
         source="ingredient",
         queryset=Ingredient.objects.all(),
@@ -74,14 +73,9 @@ class RecipeIngredientSerializer(serializers.Serializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-
     category_id = serializers.PrimaryKeyRelatedField(
         source="category",
         queryset=Category.objects.all(),
-    )
-    author_id = serializers.PrimaryKeyRelatedField(
-        source="author",
-        queryset=User.objects.all(),
     )
     ingredients = RecipeIngredientSerializer(
         source="recipe_ingredients",
@@ -102,7 +96,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             "image_url",
             "created_at",
             "category_id",
-            "author_id",
             "ingredients",
         ]
         read_only_fields = ["id", "created_at"]
@@ -118,7 +111,6 @@ class RecipeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data.pop("category_id")
-        data.pop("author_id")
         data.update(short_relations(instance))
         return data
 
@@ -147,7 +139,6 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Recipe
         fields = ["id", "title", "cooking_time", "difficulty", "image_url"]
