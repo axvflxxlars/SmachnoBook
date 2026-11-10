@@ -1,0 +1,917 @@
+{
+  "info": {
+    "name": "SmachnoBook API",
+    "description": "Запускайте запити зверху вниз: спершу створення, потім помилки, наприкінці очищення. Перед запуском створіть користувача (createsuperuser) і вкажіть його id у змінній author_id.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Супи\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set(\"category_id\", json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "{{category_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "{{category_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Перші страви\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Recipes of category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}/recipes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "{{category_id}}",
+                "recipes"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Ingredients",
+      "item": [
+        {
+          "name": "Create ingredient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/ingredients",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ingredients"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Буряк\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set(\"ingredient_id\", json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List ingredients (search)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients?search=буряк&page=1&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ingredients"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "буряк"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get ingredient",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/{{ingredient_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ingredients",
+                "{{ingredient_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update ingredient",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/ingredients/{{ingredient_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ingredients",
+                "{{ingredient_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Буряк столовий\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Recipes with ingredient",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/{{ingredient_id}}/recipes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ingredients",
+                "{{ingredient_id}}",
+                "recipes"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Recipes",
+      "item": [
+        {
+          "name": "Create recipe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Борщ український\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 90,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"author_id\": \"{{author_id}}\",\n  \"ingredients\": [\n    {\n      \"ingredient_id\": \"{{ingredient_id}}\",\n      \"amount\": 2,\n      \"unit\": \"шт\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set(\"recipe_id\", json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List recipes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes?page=1&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List recipes (filters)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes?search=борщ&difficulty=medium&max_time=120&sort=time_asc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "борщ"
+                },
+                {
+                  "key": "difficulty",
+                  "value": "medium"
+                },
+                {
+                  "key": "max_time",
+                  "value": "120"
+                },
+                {
+                  "key": "sort",
+                  "value": "time_asc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get recipe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipe_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update recipe",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipe_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Борщ з пампушками\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 90,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"author_id\": \"{{author_id}}\",\n  \"ingredients\": [\n    {\n      \"ingredient_id\": \"{{ingredient_id}}\",\n      \"amount\": 2,\n      \"unit\": \"шт\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authors",
+      "item": [
+        {
+          "name": "Get author",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{author_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{author_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Recipes of author",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{author_id}}/recipes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{author_id}}",
+                "recipes"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Errors",
+      "item": [
+        {
+          "name": "Delete category with recipes (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "{{category_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "409 Conflict",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/categories/{{category_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "categories",
+                    "{{category_id}}"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Неможливо видалити категорію «Перші страви», оскільки в ній рецептів: 1. Спочатку видаліть їх або перенесіть в іншу категорію.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete ingredient in use (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/{{ingredient_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ingredients",
+                "{{ingredient_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "409 Conflict",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ingredients/{{ingredient_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ingredients",
+                    "{{ingredient_id}}"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Неможливо видалити інгредієнт «Буряк столовий», оскільки він використовується в рецептах: 1.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create category, invalid data (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/categories",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "categories"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Некоректні дані. Перевірте поля запиту.\",\n  \"details\": {\n    \"name\": [\n      \"Це поле не може бути порожнім.\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create recipe, invalid data (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Борщ український\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 0,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"author_id\": \"{{author_id}}\",\n  \"ingredients\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/recipes",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "recipes"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Борщ український\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 0,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"author_id\": \"{{author_id}}\",\n  \"ingredients\": []\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Некоректні дані. Перевірте поля запиту.\",\n  \"details\": {\n    \"cooking_time\": [\n      \"Переконайтеся, що це значення більше або дорівнює 1.\"\n    ],\n    \"ingredients\": [\n      \"Цей список не може бути порожнім.\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get missing recipe (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "999999"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/recipes/999999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "recipes",
+                    "999999"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Рецепт з id=999999 не знайдено.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Invalid sort parameter (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes?sort=best",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "best"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/recipes?sort=best",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "recipes"
+                  ],
+                  "query": [
+                    {
+                      "key": "sort",
+                      "value": "best"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Параметр sort має бути одним із: newest, time_asc.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cleanup",
+      "item": [
+        {
+          "name": "Delete recipe",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipe_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete ingredient",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/{{ingredient_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ingredients",
+                "{{ingredient_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete category",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "{{category_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api/v1"
+    },
+    {
+      "key": "author_id",
+      "value": "1"
+    },
+    {
+      "key": "category_id",
+      "value": ""
+    },
+    {
+      "key": "ingredient_id",
+      "value": ""
+    },
+    {
+      "key": "recipe_id",
+      "value": ""
+    }
+  ]
+}
