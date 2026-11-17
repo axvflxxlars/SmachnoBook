@@ -25,6 +25,23 @@ ignore = [
 "*/settings.py" = ["F403", "F405", "E501"]
 "manage.py" = ["E501"]
 
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.coverage.run]
+source = ["config", "recipes", "users"]
+omit = [
+    "*/migrations/*",
+    "config/asgi.py",
+    "config/wsgi.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+
 [tool.djlint]
 profile = "django"
 indent = 2
