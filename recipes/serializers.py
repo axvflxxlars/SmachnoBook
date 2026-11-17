@@ -13,19 +13,6 @@ def user_name(user):
     return user.get_full_name() or user.username
 
 
-def short_relations(recipe):
-    return {
-        "category": {
-            "id": recipe.category_id,
-            "name": recipe.category.name,
-        },
-        "author": {
-            "id": recipe.author_id,
-            "name": user_name(recipe.author),
-        },
-    }
-
-
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -38,45 +25,62 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
-class UserSerializer(serializers.ModelSerializer):
+class AuthorShortSerializer(serializers.ModelSerializer):
+    """Автор у складі рецепта: лише id та ім'я."""
+
+    name = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id"]
+        fields = ["id", "name"]
 
-    def to_representation(self, instance):
-        return {
-            "id": instance.id,
-            "name": user_name(instance),
-            "recipes_count": instance.recipes.count(),
-        }
+    # Підказка типу -> str потрібна drf-spectacular, щоб знати тип поля
+    def get_name(self, user) -> str:
+        return user_name(user)
+
+
+class UserSerializer(AuthorShortSerializer):
+    """Публічна сторінка автора."""
+
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta(AuthorShortSerializer.Meta):
+        fields = ["id", "name", "recipes_count"]
+
+    def get_recipes_count(self, user) -> int:
+        return user.recipes.count()
 
 
 class RecipeIngredientSerializer(serializers.Serializer):
+    # Лише на вході: id інгредієнта
     ingredient_id = serializers.PrimaryKeyRelatedField(
         source="ingredient",
         queryset=Ingredient.objects.all(),
+        write_only=True,
     )
+    # Лише на виході: id і назва інгредієнта
+    id = serializers.IntegerField(source="ingredient_id", read_only=True)
+    name = serializers.CharField(source="ingredient.name", read_only=True)
+    # coerce_to_string=False: у відповіді число (2.0), а не рядок ("2.00")
     amount = serializers.DecimalField(
         max_digits=8,
         decimal_places=2,
         min_value=Decimal("0.01"),
+        coerce_to_string=False,
     )
     unit = serializers.CharField(max_length=20)
 
-    def to_representation(self, instance):
-        return {
-            "id": instance.ingredient_id,
-            "name": instance.ingredient.name,
-            "amount": float(instance.amount),
-            "unit": instance.unit,
-        }
-
 
 class RecipeSerializer(serializers.ModelSerializer):
+    # На вході приймаємо id категорії, на виході віддаємо об'єкт category
     category_id = serializers.PrimaryKeyRelatedField(
         source="category",
         queryset=Category.objects.all(),
+        write_only=True,
     )
+    category = CategorySerializer(read_only=True)
+    # Автора не передають у запиті: його підставляє в'юха з токена
+    author = AuthorShortSerializer(read_only=True)
     ingredients = RecipeIngredientSerializer(
         source="recipe_ingredients",
         many=True,
@@ -96,6 +100,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             "image_url",
             "created_at",
             "category_id",
+            "category",
+            "author",
             "ingredients",
         ]
         read_only_fields = ["id", "created_at"]
@@ -107,12 +113,6 @@ class RecipeSerializer(serializers.ModelSerializer):
                 "Інгредієнти в рецепті не повинні повторюватись."
             )
         return items
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data.pop("category_id")
-        data.update(short_relations(instance))
-        return data
 
     @transaction.atomic
     def create(self, validated_data):
@@ -139,11 +139,19 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
+    """Коротка версія рецепта для списків."""
+
+    category = CategorySerializer(read_only=True)
+    author = AuthorShortSerializer(read_only=True)
+
     class Meta:
         model = Recipe
-        fields = ["id", "title", "cooking_time", "difficulty", "image_url"]
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data.update(short_relations(instance))
-        return data
+        fields = [
+            "id",
+            "title",
+            "cooking_time",
+            "difficulty",
+            "image_url",
+            "category",
+            "author",
+        ]
