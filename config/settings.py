@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
+
+from decouple import Csv, config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,13 +22,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-csz#0g_+u88cb1nzqg9v5c@7!6jmj+(d3b(%12ha1a7vx2!otp"
+# Конфіденційні налаштування й налаштування середовища читаються з файлу .env
+# (або зі змінних середовища). Зразок: .env.example
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Без значення за замовчуванням: якщо SECRET_KEY не задано, сервер не запуститься
+SECRET_KEY = config("SECRET_KEY")
 
-ALLOWED_HOSTS = []
+DEBUG = config("DEBUG", default=False, cast=bool)
+
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
 
 
 # Application definition
@@ -38,21 +43,72 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "drf_spectacular",
     "corsheaders",
     "recipes",
+    "users",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    # CorsMiddleware має стояти якомога вище, обов'язково перед CommonMiddleware
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.security.SecurityMiddleware",
 ]
+
+CORS_ALLOWED_ORIGINS = config(
+    "CORS_ALLOWED_ORIGINS",
+    default="http://127.0.0.1:5500,http://localhost:5500",
+    cast=Csv(),
+)
+
+REST_FRAMEWORK = {
+    # Користувача визначаємо за JWT у заголовку Authorization: Bearer <access>
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    # За замовчуванням: читати можуть усі, змінювати лише авторизовані
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
+    "EXCEPTION_HANDLER": "recipes.exceptions.custom_exception_handler",
+    # drf-spectacular будує OpenAPI-схему з в'юх і серіалізаторів
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SIMPLE_JWT = {
+    # Короткий access-токен: якщо його вкрадуть, він швидко стане недійсним
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        minutes=config("ACCESS_TOKEN_LIFETIME_MINUTES", default=5, cast=int)
+    ),
+    # Довгий refresh-токен: ним отримують новий access без повторного логіну
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=config("REFRESH_TOKEN_LIFETIME_DAYS", default=1, cast=int)
+    ),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "SmachnoBook API",
+    "DESCRIPTION": (
+        "API сайту з рецептами SmachnoBook. Для захищених запитів передайте "
+        "access-токен у заголовку `Authorization: Bearer <token>` "
+        "(кнопка **Authorize** у Swagger UI). Токен можна отримати через "
+        "`POST /api/v1/auth/login`."
+    ),
+    "VERSION": "1.0.0",
+    # Не показувати саму схему серед ендпоінтів
+    "SERVE_INCLUDE_SCHEMA": False,
+    # Окремі схеми для запиту й відповіді: у рецепта вони різні
+    # (на вході category_id, на виході об'єкт category)
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SCHEMA_PATH_PREFIX": "/api/v1",
+}
 
 ROOT_URLCONF = "config.urls"
 
@@ -107,7 +163,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "uk"
 
 TIME_ZONE = "UTC"
 
@@ -128,5 +184,42 @@ STATIC_URL = "static/"
 MAILERS = {
     "default": {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
+    },
+}
+
+
+# Logging
+# https://docs.djangoproject.com/en/6.1/topics/logging/
+
+LOG_LEVEL = config("LOG_LEVEL", default="INFO")
+
+LOGGING = {
+    "version": 1,
+    # Не вимикати стандартні логери Django (наприклад, django.server)
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} {levelname} [{name}] {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        # Наші застосунки
+        "recipes": {"handlers": ["console"], "level": LOG_LEVEL},
+        "users": {"handlers": ["console"], "level": LOG_LEVEL},
+        # Django сам логує кожну відповідь 4xx як WARNING. Ці випадки вже
+        # докладніше логує наш обробник помилок, тому тут лишаємо тільки
+        # ERROR: помилки сервера (5xx) разом з traceback
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
     },
 }

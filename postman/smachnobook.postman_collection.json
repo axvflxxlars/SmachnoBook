@@ -1,10 +1,409 @@
 {
   "info": {
     "name": "SmachnoBook API",
-    "description": "Запускайте запити зверху вниз: спершу створення, потім помилки, наприкінці очищення. Перед запуском створіть користувача (createsuperuser) і вкажіть його id у змінній author_id.",
+    "description": "Запускайте запити зверху вниз. Спершу створіть адміністратора (python manage.py createsuperuser) і впишіть його логін і пароль у змінні admin_username та admin_password. Папка Auth реєструє нового користувача, логінить його і адміністратора та зберігає токени у змінних колекції. За замовчуванням усі запити йдуть з токеном звичайного користувача (Authorization: Bearer {{access_token}}), а дії, доступні лише адміністратору, з токеном {{admin_access_token}}. Access-токен живе 5 хвилин: якщо отримали 401, запустіть Auth → Refresh access token.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
+    {
+      "name": "Auth",
+      "description": "Реєстрація, логін, оновлення access-токена і дані поточного користувача.",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"first_name\": \"Олена\",\n  \"last_name\": \"Коваль\",\n  \"email\": \"{{username}}@example.com\",\n  \"password\": \"{{password}}\",\n  \"password_confirm\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{username}}\",\n  \"first_name\": \"Олена\",\n  \"last_name\": \"Коваль\",\n  \"email\": \"{{username}}@example.com\",\n  \"password\": \"{{password}}\",\n  \"password_confirm\": \"{{password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 2,\n  \"username\": \"user_1731240000000\",\n  \"email\": \"user_1731240000000@example.com\",\n  \"first_name\": \"Олена\",\n  \"last_name\": \"Коваль\",\n  \"is_staff\": false\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Унікальне ім'я, щоб запит можна було запускати повторно",
+                  "pm.collectionVariables.set(\"username\", \"user_\" + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": 2,\n    \"username\": \"olena\",\n    \"email\": \"olena@example.com\",\n    \"first_name\": \"Олена\",\n    \"last_name\": \"Коваль\",\n    \"is_staff\": false\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set(\"access_token\", json.access);",
+                  "pm.collectionVariables.set(\"refresh_token\", json.refresh);",
+                  "pm.collectionVariables.set(\"author_id\", json.user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Логін адміністратора (створеного через createsuperuser). Вкажіть admin_username і admin_password у змінних колекції."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"admin_access_token\", pm.response.json().access);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh access token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/refresh",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"access_token\", pm.response.json().access);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Current user (me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 2,\n  \"username\": \"olena\",\n  \"email\": \"olena@example.com\",\n  \"first_name\": \"Олена\",\n  \"last_name\": \"Коваль\",\n  \"is_staff\": false\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
     {
       "name": "Categories",
       "item": [
@@ -35,6 +434,16 @@
                   "language": "json"
                 }
               }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "response": [],
@@ -114,6 +523,16 @@
                   "language": "json"
                 }
               }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "response": []
@@ -262,6 +681,16 @@
                   "language": "json"
                 }
               }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "response": []
@@ -311,7 +740,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Борщ український\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 90,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"author_id\": \"{{author_id}}\",\n  \"ingredients\": [\n    {\n      \"ingredient_id\": \"{{ingredient_id}}\",\n      \"amount\": 2,\n      \"unit\": \"шт\"\n    }\n  ]\n}",
+              "raw": "{\n  \"title\": \"Борщ український\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 90,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"ingredients\": [\n    {\n      \"ingredient_id\": \"{{ingredient_id}}\",\n      \"amount\": 2,\n      \"unit\": \"шт\"\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -435,7 +864,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Борщ з пампушками\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 90,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"author_id\": \"{{author_id}}\",\n  \"ingredients\": [\n    {\n      \"ingredient_id\": \"{{ingredient_id}}\",\n      \"amount\": 2,\n      \"unit\": \"шт\"\n    }\n  ]\n}",
+              "raw": "{\n  \"title\": \"Борщ з пампушками\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 90,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"ingredients\": [\n    {\n      \"ingredient_id\": \"{{ingredient_id}}\",\n      \"amount\": 2,\n      \"unit\": \"шт\"\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -506,6 +935,16 @@
                 "categories",
                 "{{category_id}}"
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "response": [
@@ -551,6 +990,16 @@
               "path": [
                 "ingredients",
                 "{{ingredient_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
               ]
             }
           },
@@ -611,6 +1060,16 @@
                   "language": "json"
                 }
               }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "response": [
@@ -677,7 +1136,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Борщ український\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 0,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"author_id\": \"{{author_id}}\",\n  \"ingredients\": []\n}",
+              "raw": "{\n  \"title\": \"Борщ український\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 0,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"ingredients\": []\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -707,7 +1166,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"title\": \"Борщ український\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 0,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"author_id\": \"{{author_id}}\",\n  \"ingredients\": []\n}",
+                  "raw": "{\n  \"title\": \"Борщ український\",\n  \"description\": \"Класичний борщ з буряком і капустою\",\n  \"instructions\": \"1. Відваріть м'ясо. 2. Додайте овочі.\",\n  \"cooking_time\": 0,\n  \"servings\": 6,\n  \"difficulty\": \"medium\",\n  \"image_url\": \"https://example.com/borsch.jpg\",\n  \"category_id\": \"{{category_id}}\",\n  \"ingredients\": []\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -829,6 +1288,676 @@
               "body": "{\n  \"error\": \"Параметр sort має бути одним із: newest, time_asc.\"\n}"
             }
           ]
+        },
+        {
+          "name": "Register, invalid data (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\",\n  \"email\": \"not-an-email\",\n  \"password\": \"123\",\n  \"password_confirm\": \"456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"\",\n  \"email\": \"not-an-email\",\n  \"password\": \"123\",\n  \"password_confirm\": \"456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Некоректні дані. Перевірте поля запиту.\",\n  \"details\": {\n    \"username\": [\n      \"Це поле не може бути порожнім.\"\n    ],\n    \"email\": [\n      \"Введіть коректну адресу електронної пошти.\"\n    ],\n    \"password\": [\n      \"Переконайтесь, що це поле містить не менше 8 символів.\"\n    ]\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register, passwords do not match (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"new_user\",\n  \"email\": \"new_user@example.com\",\n  \"password\": \"Strong_Pass1\",\n  \"password_confirm\": \"Strong_Pass2\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"new_user\",\n  \"email\": \"new_user@example.com\",\n  \"password\": \"Strong_Pass1\",\n  \"password_confirm\": \"Strong_Pass2\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Некоректні дані. Перевірте поля запиту.\",\n  \"details\": {\n    \"password_confirm\": [\n      \"Паролі не збігаються.\"\n    ]\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login, wrong password (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"wrong-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"wrong-password\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Неправильне ім'я користувача або пароль.\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create recipe without token (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Без токена\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/recipes",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "recipes"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Без токена\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Потрібна авторизація. Передайте access-токен у заголовку Authorization: Bearer <token>.\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Current user, invalid token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "invalid.token.value",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "invalid.token.value",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Токен недійсний або термін його дії минув.\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh, invalid token (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"invalid.token.value\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/refresh",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refresh\": \"invalid.token.value\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Токен недійсний або термін його дії минув.\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create category as regular user (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Десерти\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "403 Forbidden",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/categories",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "categories"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Десерти\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Ця дія доступна лише адміністратору.\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete ingredient as regular user (403)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/{{ingredient_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ingredients",
+                "{{ingredient_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "403 Forbidden",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ingredients/{{ingredient_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ingredients",
+                    "{{ingredient_id}}"
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Ця дія доступна лише адміністратору.\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -867,6 +1996,16 @@
                 "ingredients",
                 "{{ingredient_id}}"
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "response": []
@@ -885,6 +2024,16 @@
                 "categories",
                 "{{category_id}}"
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "response": []
@@ -899,7 +2048,7 @@
     },
     {
       "key": "author_id",
-      "value": "1"
+      "value": ""
     },
     {
       "key": "category_id",
@@ -912,6 +2061,44 @@
     {
       "key": "recipe_id",
       "value": ""
+    },
+    {
+      "key": "username",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": "Strong_Pass_2026"
+    },
+    {
+      "key": "admin_username",
+      "value": "admin"
+    },
+    {
+      "key": "admin_password",
+      "value": ""
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "admin_access_token",
+      "value": ""
     }
-  ]
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  }
 }
