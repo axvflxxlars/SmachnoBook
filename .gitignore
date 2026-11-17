@@ -11,6 +11,13 @@ env/
 # Налаштування й секрети
 .env
 
+# Тести й покриття
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
 # Django
 db.sqlite3
 db.sqlite3-journal
